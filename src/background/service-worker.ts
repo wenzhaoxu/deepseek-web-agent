@@ -25,6 +25,9 @@ const pendingReadyMap = new Map<
   }
 >();
 
+/** Tabs that already sent CONTENT_SCRIPT_READY (resolve waitForTabReady immediately). */
+const readyTabs = new Set<number>();
+
 // ============================================================================
 // Storage CRUD
 // ============================================================================
@@ -129,6 +132,10 @@ async function findOrCreateDeepSeekTab(): Promise<number> {
 }
 
 function waitForTabReady(tabId: number): Promise<boolean> {
+  // Tab already reported ready — resolve instantly
+  if (readyTabs.has(tabId)) {
+    return Promise.resolve(true);
+  }
   return new Promise<boolean>((resolve, reject) => {
     const timer = setTimeout(() => {
       pendingReadyMap.delete(tabId);
@@ -234,28 +241,37 @@ async function handleMessage(
     switch (message.type) {
       case MessageType.CONTENT_SCRIPT_READY: {
         const tabId = sender.tab?.id;
-        if (tabId && pendingReadyMap.has(tabId)) {
-          const pending = pendingReadyMap.get(tabId)!;
-          clearTimeout(pending.timer);
-          pending.resolve(true);
-          pendingReadyMap.delete(tabId);
+        if (tabId) {
+          readyTabs.add(tabId);
+          if (pendingReadyMap.has(tabId)) {
+            const pending = pendingReadyMap.get(tabId)!;
+            clearTimeout(pending.timer);
+            pending.resolve(true);
+            pendingReadyMap.delete(tabId);
+          }
         }
         return createSuccessResponse({ ready: true });
       }
 
       case MessageType.STATUS_CHANGE: {
-        const payload = message.payload as { status: TabStatus; tabId: number };
-        tabStatusMap.set(payload.tabId, payload.status);
-        persistTabStatuses();
-        updateBadge(payload.tabId, payload.status);
+        const payload = message.payload as { status: TabStatus };
+        const tabId = sender.tab?.id;
+        if (tabId !== undefined) {
+          tabStatusMap.set(tabId, payload.status);
+          persistTabStatuses();
+          updateBadge(tabId, payload.status);
+        }
         return createSuccessResponse({ updated: true });
       }
 
       case MessageType.DISCONNECT: {
         const tabId = sender.tab?.id;
-        if (tabId && tabStatusMap.has(tabId)) {
-          tabStatusMap.delete(tabId);
-          persistTabStatuses();
+        if (tabId !== undefined) {
+          readyTabs.delete(tabId);
+          if (tabStatusMap.has(tabId)) {
+            tabStatusMap.delete(tabId);
+            persistTabStatuses();
+          }
         }
         return createSuccessResponse({ disconnected: true });
       }

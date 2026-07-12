@@ -1,5 +1,5 @@
 import { TabStatus, MessageType } from '../shared/types.js';
-import type { ExtensionMessage, ExtensionResponse, FillTextPayload, FillResultPayload, StatusChangePayload } from '../shared/types.js';
+import type { ExtensionMessage, ExtensionResponse, FillTextPayload, FillResultPayload } from '../shared/types.js';
 import { SELECTORS, STATUS_CONFIG } from '../shared/constants.js';
 import { createMessage, createErrorResponse, createSuccessResponse } from '../shared/messages.js';
 
@@ -70,9 +70,8 @@ function reportStatusChange(): void {
   if (currentStatus !== lastReportedStatus) {
     lastReportedStatus = currentStatus;
     chrome.runtime.sendMessage(
-      createMessage<StatusChangePayload>(MessageType.STATUS_CHANGE, {
+      createMessage(MessageType.STATUS_CHANGE, {
         status: currentStatus,
-        tabId: 0,
       })
     );
   }
