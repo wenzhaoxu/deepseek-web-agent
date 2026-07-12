@@ -1,7 +1,7 @@
-import { TabStatus, MessageType } from '../shared/types';
-import type { ExtensionMessage, ExtensionResponse, FillTextPayload, FillResultPayload, StatusChangePayload } from '../shared/types';
-import { SELECTORS, STATUS_CONFIG } from '../shared/constants';
-import { createMessage, createErrorResponse, createSuccessResponse } from '../shared/messages';
+import { TabStatus, MessageType } from '../shared/types.js';
+import type { ExtensionMessage, ExtensionResponse, FillTextPayload, FillResultPayload, StatusChangePayload } from '../shared/types.js';
+import { SELECTORS, STATUS_CONFIG } from '../shared/constants.js';
+import { createMessage, createErrorResponse, createSuccessResponse } from '../shared/messages.js';
 
 // State
 let statusCheckTimer: ReturnType<typeof setTimeout> | null = null;

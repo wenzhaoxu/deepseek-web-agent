@@ -1,13 +1,13 @@
-import { TabStatus, MessageType } from '../shared/types';
+import { TabStatus, MessageType } from '../shared/types.js';
 import type {
   Instruction,
   ExtensionMessage,
   ExtensionResponse,
   FillTextPayload,
   FillResultPayload,
-} from '../shared/types';
-import { STORAGE_KEYS, DEFAULT_INSTRUCTIONS, STATUS_CONFIG } from '../shared/constants';
-import { createSuccessResponse, createErrorResponse } from '../shared/messages';
+} from '../shared/types.js';
+import { STORAGE_KEYS, DEFAULT_INSTRUCTIONS, STATUS_CONFIG } from '../shared/constants.js';
+import { createSuccessResponse, createErrorResponse } from '../shared/messages.js';
 
 // ============================================================================
 // State

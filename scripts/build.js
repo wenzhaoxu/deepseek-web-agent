@@ -76,6 +76,13 @@ bundle('options/options.js', [
   'options/options.js',
 ]);
 
+bundle('content/content-script.js', [
+  'shared/types.js',
+  'shared/messages.js',
+  'shared/constants.js',
+  'content/content-script.js',
+]);
+
 // ── 4. Update HTML files to remove type="module" since bundles are plain scripts ──
 for (const page of ['popup', 'options']) {
   const htmlPath = path.join(DIST, page, `${page}.html`);
