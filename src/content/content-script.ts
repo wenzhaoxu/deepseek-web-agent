@@ -96,10 +96,14 @@ function setupMutationObserver(): void {
 async function handleFillText(payload: FillTextPayload): Promise<ExtensionResponse<FillResultPayload>> {
   const input = findChatInput();
   if (!input) {
+    console.error('[DeepSeek助手] 未找到输入框。页面输入框:', document.querySelector('textarea'));
     return createErrorResponse('未找到输入框');
   }
 
+  console.log('[DeepSeek助手] 找到输入框:', input.placeholder, 'tag:', input.tagName);
+
   setNativeValue(input, payload.text);
+  console.log('[DeepSeek助手] 已填入文本:', payload.text.substring(0, 30) + '...');
 
   if (payload.autoSend) {
     const status = detectPageStatus();
@@ -107,8 +111,10 @@ async function handleFillText(payload: FillTextPayload): Promise<ExtensionRespon
       input.focus();
       await new Promise<void>(r => setTimeout(r, 100));
       triggerSend();
+      console.log('[DeepSeek助手] 已触发发送');
       return createSuccessResponse<FillResultPayload>({ status: 'success' });
     }
+    console.log('[DeepSeek助手] 模型回复中，只填入未发送');
     return createSuccessResponse<FillResultPayload>({
       status: 'warning',
       warning: '模型回复中，已填入未发送',
@@ -143,11 +149,13 @@ function setupDisconnectListeners(): void {
 
 // Initialize the content script
 function init(): void {
+  console.log('[DeepSeek助手] Content Script 已加载');
   setupMessageListener();
   setupMutationObserver();
   setupDisconnectListeners();
   chrome.runtime.sendMessage(createMessage(MessageType.CONTENT_SCRIPT_READY));
   reportStatusChange();
+  console.log('[DeepSeek助手] 初始化完成');
 }
 
 init();
