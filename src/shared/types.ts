@@ -53,7 +53,6 @@ export interface ExecuteInstructionPayload {
 
 export interface FillTextPayload {
   text: string;
-  autoSend: boolean;
 }
 
 export interface FillResultPayload {

@@ -169,7 +169,7 @@ async function executeInstruction(
 
     const fillMsg: ExtensionMessage = {
       type: MessageType.FILL_TEXT,
-      payload: { text, autoSend: instruction.autoSend } as FillTextPayload,
+      payload: { text } as FillTextPayload,
     };
 
     // Try sending FILL_TEXT directly — works if content script is already running
@@ -422,7 +422,7 @@ chrome.contextMenus.onClicked.addListener(
         chrome.tabs
           .sendMessage(tab.id, {
             type: MessageType.FILL_TEXT,
-            payload: { text: selectedText, autoSend: false } as FillTextPayload,
+            payload: { text: selectedText } as FillTextPayload,
           })
           .catch(() => {});
       }

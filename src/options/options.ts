@@ -18,7 +18,6 @@ let modalTitle: HTMLElement | null = null;
 let editTitle: HTMLInputElement | null = null;
 let editText: HTMLTextAreaElement | null = null;
 let editCategory: HTMLInputElement | null = null;
-let editAutoSend: HTMLInputElement | null = null;
 let editShowInContextMenu: HTMLInputElement | null = null;
 let editEnabled: HTMLInputElement | null = null;
 let categoryList: HTMLElement | null = null;
@@ -43,7 +42,6 @@ function cacheDomElements(): void {
   editTitle = document.getElementById("editTitle") as HTMLInputElement;
   editText = document.getElementById("editText") as HTMLTextAreaElement;
   editCategory = document.getElementById("editCategory") as HTMLInputElement;
-  editAutoSend = document.getElementById("editAutoSend") as HTMLInputElement;
   editShowInContextMenu = document.getElementById("editShowInContextMenu") as HTMLInputElement;
   editEnabled = document.getElementById("editEnabled") as HTMLInputElement;
   categoryList = document.getElementById("categoryList");
@@ -121,9 +119,8 @@ function renderInstructionTable(): void {
     html += `<td class="col-title">${escapeHtml(inst.title)}</td>`;
     html += `<td class="col-preview preview">${escapeHtml(preview)}</td>`;
     html += `<td class="col-category">${escapeHtml(inst.category)}</td>`;
-    html += `<td class="col-autosend"><label class="toggle-switch"><input type="checkbox" ${inst.autoSend ? "checked" : ""} onchange="window.toggleAutoSend('${escapeHtml(inst.id)}', this.checked)"><span class="toggle-slider"></span></label></td>`;
-    html += `<td class="col-enabled"><label class="toggle-switch"><input type="checkbox" ${inst.enabled ? "checked" : ""} onchange="window.toggleEnabled('${escapeHtml(inst.id)}', this.checked)"><span class="toggle-slider"></span></label></td>`;
-    html += `<td class="col-actions"><button class="btn btn-sm btn-edit" onclick="window.openEditModal('${escapeHtml(inst.id)}')">编辑</button> <button class="btn btn-sm btn-danger" onclick="window.deleteInstruction('${escapeHtml(inst.id)}')">删除</button></td>`;
+    html += `<td class="col-enabled"><label class="toggle-switch" data-id="${escapeHtml(inst.id)}"><input type="checkbox" ${inst.enabled ? "checked" : ""}><span class="toggle-slider"></span></label></td>`;
+    html += `<td class="col-actions"><button class="btn btn-sm btn-edit" data-action="edit" data-id="${escapeHtml(inst.id)}">编辑</button> <button class="btn btn-sm btn-danger" data-action="delete" data-id="${escapeHtml(inst.id)}">删除</button></td>`;
     html += `</tr>`;
   }
   tableBody.innerHTML = html;
@@ -177,17 +174,6 @@ async function deleteInstruction(id: string): Promise<void> {
     renderInstructionTable();
   } catch (err) {
     console.error("Options: Failed to delete instruction", err);
-  }
-}
-
-async function toggleAutoSend(id: string, checked: boolean): Promise<void> {
-  const inst = instructions.find((i) => i.id === id);
-  if (!inst) return;
-  inst.autoSend = checked;
-  try {
-    await sendMessage(createMessage(MessageType.SAVE_INSTRUCTION, { instruction: inst }));
-  } catch (err) {
-    console.error("Options: Failed to toggle auto-send", err);
   }
 }
 
@@ -276,7 +262,7 @@ async function saveAllInstructions(): Promise<void> {
 
 // --- Edit Modal ---
 function openEditModal(instructionId?: string): void {
-  if (!editModal || !modalTitle || !editTitle || !editText || !editCategory || !editAutoSend || !editShowInContextMenu || !editEnabled || !categoryList) return;
+  if (!editModal || !modalTitle || !editTitle || !editText || !editCategory || !editShowInContextMenu || !editEnabled || !categoryList) return;
 
   let instruction: Instruction | undefined;
   if (instructionId) {
@@ -289,7 +275,6 @@ function openEditModal(instructionId?: string): void {
     editTitle.value = instruction.title;
     editText.value = instruction.text;
     editCategory.value = instruction.category;
-    editAutoSend.checked = instruction.autoSend;
     editShowInContextMenu.checked = instruction.showInContextMenu;
     editEnabled.checked = instruction.enabled;
   } else {
@@ -298,7 +283,6 @@ function openEditModal(instructionId?: string): void {
     editTitle.value = "";
     editText.value = "";
     editCategory.value = "";
-    editAutoSend.checked = false;
     editShowInContextMenu.checked = false;
     editEnabled.checked = true;
   }
@@ -317,7 +301,7 @@ function closeEditModal(): void {
 }
 
 function saveFromModal(): void {
-  if (!editTitle || !editText || !editCategory || !editAutoSend || !editShowInContextMenu || !editEnabled) return;
+  if (!editTitle || !editText || !editCategory || !editShowInContextMenu || !editEnabled) return;
 
   if (!editTitle.value.trim() || !editText.value.trim()) {
     alert("标题和内容不能为空");
@@ -328,7 +312,6 @@ function saveFromModal(): void {
     title: editTitle.value.trim(),
     text: editText.value.trim(),
     category: editCategory.value.trim() || "通用",
-    autoSend: editAutoSend.checked,
     showInContextMenu: editShowInContextMenu.checked,
     enabled: editEnabled.checked,
   });
@@ -537,14 +520,32 @@ function setupEventListeners(): void {
       closeEditModal();
     }
   });
-}
 
-// --- Window-exposed functions for inline onclick handlers ---
-(window as unknown as Record<string, unknown>).openEditModal = openEditModal;
-(window as unknown as Record<string, unknown>).closeEditModal = closeEditModal;
-(window as unknown as Record<string, unknown>).deleteInstruction = deleteInstruction;
-(window as unknown as Record<string, unknown>).toggleAutoSend = toggleAutoSend;
-(window as unknown as Record<string, unknown>).toggleEnabled = toggleEnabled;
+  // Table action buttons (event delegation)
+  tableBody?.addEventListener("click", (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const btn = target.closest("[data-action]") as HTMLElement | null;
+    if (!btn) return;
+    const id = btn.getAttribute("data-id");
+    if (!id) return;
+
+    if (btn.getAttribute("data-action") === "edit") {
+      openEditModal(id);
+    } else if (btn.getAttribute("data-action") === "delete") {
+      deleteInstruction(id);
+    }
+  });
+
+  // Table toggle switches (event delegation)
+  tableBody?.addEventListener("change", (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    if (target.type !== "checkbox") return;
+    const label = target.closest(".toggle-switch") as HTMLElement | null;
+    if (!label) return;
+    const id = label.getAttribute("data-id");
+    if (id) toggleEnabled(id, target.checked);
+  });
+}
 
 // --- Helpers ---
 function escapeHtml(text: string): string {

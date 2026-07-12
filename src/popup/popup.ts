@@ -66,10 +66,6 @@ function renderStatusBar(): void {
   }
 }
 
-function isGenerating(): boolean {
-  return currentStatus === TabStatus.GENERATING;
-}
-
 // --- Instructions ---
 async function loadInstructions(): Promise<void> {
   try {
@@ -131,12 +127,6 @@ function renderInstructionList(): void {
     for (const item of items) {
       html += `<div class="instruction-item" data-id="${escapeHtml(item.id)}">`;
       html += `<span class="instruction-item__title">${escapeHtml(item.title)}</span>`;
-      const disabled = isGenerating() ? 'disabled' : '';
-      const checked = item.autoSend ? 'checked' : '';
-      html += `<label class="toggle-switch ${disabled}" data-id="${escapeHtml(item.id)}">`;
-      html += `<input type="checkbox" ${checked} ${disabled}>`;
-      html += `<span class="toggle-slider"></span>`;
-      html += `</label>`;
       html += `</div>`;
     }
     html += `</details>`;
@@ -163,7 +153,6 @@ function setupEventListeners(): void {
   });
 
   // Delegate: instruction item click → execute instruction
-  // Delegate: toggle switch change → toggle auto-send
   // Use event delegation on instructionList
   instructionList.addEventListener("click", (e: MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -171,27 +160,9 @@ function setupEventListeners(): void {
     const item = target.closest(".instruction-item") as HTMLElement | null;
     if (!item) return;
 
-    const toggleLabel = target.closest(".toggle-switch") as HTMLElement | null;
-    // If clicking on the toggle switch or its children, don't execute instruction
-    if (toggleLabel) return;
-
     const id = item.getAttribute("data-id");
     if (id) {
       executeInstruction(id);
-    }
-  });
-
-  // Toggle switch changes (use change event on the list)
-  instructionList.addEventListener("change", (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    if (target.type === "checkbox") {
-      const toggleLabel = target.closest(".toggle-switch") as HTMLElement | null;
-      if (toggleLabel) {
-        const id = toggleLabel.getAttribute("data-id");
-        if (id) {
-          toggleAutoSend(id, target.checked);
-        }
-      }
     }
   });
 
@@ -216,24 +187,4 @@ async function executeInstruction(instructionId: string): Promise<void> {
     console.error("Popup: Failed to execute instruction", err);
   }
   window.close();
-}
-
-// --- Auto-send toggle ---
-async function toggleAutoSend(instructionId: string, autoSend: boolean): Promise<void> {
-  const instruction = instructions.find((i) => i.id === instructionId);
-  if (!instruction) return;
-
-  // If currently generating and trying to turn autoSend ON, prevent it
-  if (isGenerating() && autoSend) {
-    // Re-render to restore state (the checkbox change will be reverted by re-render)
-    renderInstructionList();
-    return;
-  }
-
-  instruction.autoSend = autoSend;
-  try {
-    await sendMessage(createMessage(MessageType.SAVE_INSTRUCTION, { instruction }));
-  } catch (err) {
-    console.error("Popup: Failed to save instruction", err);
-  }
 }
