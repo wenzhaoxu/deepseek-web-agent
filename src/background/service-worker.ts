@@ -204,14 +204,18 @@ async function executeInstruction(
 // Context Menus
 // ============================================================================
 
+let _refreshing = false;
+
 function refreshContextMenus(): void {
+  if (_refreshing) return;
+  _refreshing = true;
   chrome.contextMenus.removeAll(async () => {
-    chrome.contextMenus.create({
-      id: 'send-to-deepseek',
-      title: '发送至 DeepSeek',
-      contexts: ['selection'],
-    });
     try {
+      chrome.contextMenus.create({
+        id: 'send-to-deepseek',
+        title: '发送至 DeepSeek',
+        contexts: ['selection'],
+      });
       const instructions = await getInstructions();
       for (const inst of instructions) {
         if (inst.showInContextMenu) {
@@ -225,6 +229,8 @@ function refreshContextMenus(): void {
       }
     } catch (err) {
       console.error('刷新右键菜单失败:', err);
+    } finally {
+      _refreshing = false;
     }
   });
 }
@@ -377,7 +383,10 @@ export async function getActiveTabStatus(): Promise<{ status: TabStatus; tabId?:
 // ============================================================================
 
 chrome.runtime.onInstalled.addListener(() => {
-  init();
+  // onInstalled fires once on install/update; the boot-level init() already
+  // handles the SW-start case, so we only need to refresh context menus here
+  // in case storage was migrated or permissions changed.
+  refreshContextMenus();
 });
 
 chrome.runtime.onMessage.addListener(
