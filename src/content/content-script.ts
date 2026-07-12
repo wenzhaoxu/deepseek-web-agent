@@ -1,6 +1,6 @@
 import { TabStatus, MessageType } from '../shared/types.js';
 import type { ExtensionMessage, ExtensionResponse, FillTextPayload, FillResultPayload } from '../shared/types.js';
-import { SELECTORS, STATUS_CONFIG } from '../shared/constants.js';
+import { INPUT_SELECTORS, SELECTORS, STATUS_CONFIG } from '../shared/constants.js';
 import { createMessage, createErrorResponse, createSuccessResponse } from '../shared/messages.js';
 
 // State
@@ -29,13 +29,13 @@ function setNativeValue(element: HTMLTextAreaElement | HTMLInputElement, value: 
 
 // Find the chat input element
 function findChatInput(): HTMLTextAreaElement | HTMLInputElement | null {
-  for (const selector of Object.values(SELECTORS)) {
-    const el = document.querySelector(selector);
-    if (el) {
-      return el as HTMLTextAreaElement | HTMLInputElement;
+  for (const selector of INPUT_SELECTORS) {
+    const el = document.querySelector<HTMLTextAreaElement | HTMLInputElement>(selector);
+    if (el && (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement)) {
+      return el;
     }
   }
-  return document.querySelector('textarea');
+  return null;
 }
 
 // Trigger a send action via Enter key

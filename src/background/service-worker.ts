@@ -163,24 +163,37 @@ async function executeInstruction(
       return createErrorResponse('未找到 DeepSeek 标签页');
     }
 
+    const text = selectedText
+      ? `${instruction.text}\n${selectedText}`
+      : instruction.text;
+
+    const fillMsg: ExtensionMessage = {
+      type: MessageType.FILL_TEXT,
+      payload: { text, autoSend: instruction.autoSend } as FillTextPayload,
+    };
+
+    // Try sending FILL_TEXT directly — works if content script is already running
+    try {
+      const response = await chrome.tabs.sendMessage<
+        ExtensionMessage,
+        ExtensionResponse<FillResultPayload>
+      >(tabId, fillMsg);
+      return response || createSuccessResponse({ status: 'success' });
+    } catch {
+      // Content script not responding — tab probably just opened, wait for ready
+    }
+
+    // Wait for content script to come online, then retry
     try {
       await waitForTabReady(tabId);
     } catch {
       return createErrorResponse('页面加载超时');
     }
 
-    const text = selectedText
-      ? `${instruction.text}\n${selectedText}`
-      : instruction.text;
-
     const response = await chrome.tabs.sendMessage<
       ExtensionMessage,
       ExtensionResponse<FillResultPayload>
-    >(tabId, {
-      type: MessageType.FILL_TEXT,
-      payload: { text, autoSend: instruction.autoSend } as FillTextPayload,
-    });
-
+    >(tabId, fillMsg);
     return response || createSuccessResponse({ status: 'success' });
   } catch (err) {
     return createErrorResponse(err instanceof Error ? err.message : '指令执行失败');

@@ -1,9 +1,15 @@
 import type { Instruction } from './types';
 
-// DOM selectors for chat.deepseek.com
+// Input field selectors for chat.deepseek.com (tried in order)
+export const INPUT_SELECTORS = [
+  'textarea[placeholder*="消息"]',
+  'textarea[name="search"]',
+  '#chat-input',
+  'textarea',
+] as const;
+
+// Button / element selectors for other interactions
 export const SELECTORS = {
-  CHAT_INPUT: '#chat-input',
-  CHAT_INPUT_FALLBACK: 'textarea[placeholder*="消息"]',
   SEND_BUTTON: 'div[role="button"]',
   STOP_BUTTON: '[data-testid="stop-button"], button:has(svg)',
   SUBMIT_BUTTON: 'button[type="submit"]',
