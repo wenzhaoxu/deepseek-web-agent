@@ -2,7 +2,7 @@
 id: ticket-01
 title: 搭建项目骨架与共享基础库
 type: task
-status: open
+status: closed
 labels: [wayfinder:task]
 ---
 ## Question

@@ -1,0 +1,14 @@
+{
+  "name": "deepseek-web-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DeepSeek 助手 Edge Extension",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.2.2",
+    "typescript": "^5.4.0"
+  }
+}

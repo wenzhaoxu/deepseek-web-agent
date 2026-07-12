@@ -2,7 +2,7 @@
 id: ticket-04
 title: 实现 Popup 弹窗界面
 type: task
-status: open
+status: closed
 labels: [wayfinder:task]
 blockedBy: [ticket-01, ticket-02]
 ---

@@ -1,0 +1,611 @@
+/* ============================================================
+   options.css — DeepSeek Assistant Options Page
+   ============================================================ */
+
+/* ---------- Reset & Base ---------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans SC', sans-serif;
+  font-size: 14px;
+  color: #333;
+  background: #f5f5f5;
+  min-width: 600px;
+  overflow-x: hidden;
+}
+
+/* ---------- Layout ---------- */
+.options-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  width: 200px;
+  min-width: 200px;
+  background: #fff;
+  border-right: 1px solid #e8e8e8;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-title {
+  padding: 16px 16px 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.category-tree {
+  list-style: none;
+  padding: 4px 0;
+  flex: 1;
+}
+
+.category-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #555;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.category-item:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.category-item.selected {
+  background: #e6f4ff;
+  color: #1677ff;
+  font-weight: 600;
+}
+
+.sidebar-btn {
+  margin: 8px 12px;
+}
+
+/* ---------- Main Content ---------- */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---------- Toolbar ---------- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+  flex-shrink: 0;
+}
+
+.toolbar-left h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.toolbar-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  background: #fff;
+  color: #333;
+  transition: all 0.2s;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn:hover {
+  border-color: #1677ff;
+  color: #1677ff;
+}
+
+.btn:active {
+  opacity: 0.8;
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.btn-primary {
+  background: #1677ff;
+  border-color: #1677ff;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #4096ff;
+  border-color: #4096ff;
+  color: #fff;
+}
+
+.btn-danger {
+  color: #ff4d4f;
+  border-color: #ff4d4f;
+}
+
+.btn-danger:hover {
+  background: #ff4d4f;
+  color: #fff;
+  border-color: #ff4d4f;
+}
+
+.btn-edit {
+  color: #1677ff;
+  border-color: #1677ff;
+}
+
+.btn-edit:hover {
+  background: #1677ff;
+  color: #fff;
+}
+
+/* ---------- Table ---------- */
+.table-container {
+  flex: 1;
+  overflow-y: auto;
+  background: #fff;
+  margin: 0;
+}
+
+.instruction-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.instruction-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.instruction-table th {
+  background: #fafafa;
+  padding: 10px 8px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  color: #666;
+  border-bottom: 1px solid #e8e8e8;
+  user-select: none;
+}
+
+.instruction-table td {
+  padding: 8px;
+  font-size: 13px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+.instruction-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.instruction-table tbody tr:hover {
+  background: #f0f7ff;
+}
+
+.instruction-table tbody tr.dragging {
+  opacity: 0.5;
+}
+
+.instruction-table tbody tr.drag-over {
+  border-bottom: 2px solid #1677ff;
+}
+
+/* Column widths */
+.col-drag { width: 36px; text-align: center; }
+.col-title { width: auto; }
+.col-preview { width: auto; max-width: 200px; }
+.col-category { width: auto; }
+.col-autosend { width: 60px; text-align: center; }
+.col-enabled { width: 60px; text-align: center; }
+.col-actions { width: auto; white-space: nowrap; }
+
+/* Drag handle */
+.drag-handle {
+  cursor: grab;
+  font-size: 16px;
+  color: #bbb;
+  user-select: none;
+  display: inline-block;
+  line-height: 1;
+}
+
+.drag-handle:hover {
+  color: #666;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Preview text */
+.preview {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+  color: #888;
+}
+
+/* ---------- Toggle Switch ---------- */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background-color: #ccc;
+  border-radius: 20px;
+  transition: 0.3s;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: #1677ff;
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(16px);
+}
+
+/* ---------- Modal ---------- */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  min-width: 420px;
+  max-width: 520px;
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
+  animation: modalIn 0.2s ease-out;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-content h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+/* ---------- Form ---------- */
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+}
+
+.form-group input[type="text"],
+.form-group textarea {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input[type="text"]:focus,
+.form-group textarea:focus {
+  border-color: #1677ff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+}
+
+.form-group-inline {
+  margin-bottom: 12px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.form-group-inline label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+}
+
+.form-group-inline input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #1677ff;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+/* ---------- Empty State ---------- */
+.empty-state {
+  padding: 48px 16px;
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+}
+
+/* ---------- Scrollbar Styling ---------- */
+.table-container::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.table-container::-webkit-scrollbar-track,
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-container::-webkit-scrollbar-thumb,
+.sidebar::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover,
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
+
+/* ============================================================
+   Dark Mode
+   ============================================================ */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #1a1a1a;
+    color: #e0e0e0;
+  }
+
+  .sidebar {
+    background: #1e1e1e;
+    border-right-color: #333;
+  }
+
+  .sidebar-title {
+    color: #e0e0e0;
+    border-bottom-color: #333;
+  }
+
+  .category-item {
+    color: #aaa;
+  }
+
+  .category-item:hover {
+    background: #2a2a2a;
+    color: #e0e0e0;
+  }
+
+  .category-item.selected {
+    background: #1a3a6a;
+    color: #66b0ff;
+  }
+
+  .toolbar {
+    background: #1e1e1e;
+    border-bottom-color: #333;
+  }
+
+  .toolbar-left h3 {
+    color: #e0e0e0;
+  }
+
+  .btn {
+    background: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+
+  .btn:hover {
+    border-color: #1677ff;
+    color: #1677ff;
+  }
+
+  .btn-primary {
+    background: #1677ff;
+    border-color: #1677ff;
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: #4096ff;
+    border-color: #4096ff;
+    color: #fff;
+  }
+
+  .btn-danger {
+    color: #ff6b6b;
+    border-color: #ff6b6b;
+  }
+
+  .btn-danger:hover {
+    background: #ff4d4f;
+    color: #fff;
+  }
+
+  .btn-edit {
+    color: #66b0ff;
+    border-color: #66b0ff;
+  }
+
+  .btn-edit:hover {
+    background: #1677ff;
+    color: #fff;
+  }
+
+  .table-container {
+    background: #1e1e1e;
+  }
+
+  .instruction-table th {
+    background: #252525;
+    color: #aaa;
+    border-bottom-color: #333;
+  }
+
+  .instruction-table td {
+    border-bottom-color: #333;
+  }
+
+  .instruction-table tbody tr:nth-child(even) {
+    background: #222;
+  }
+
+  .instruction-table tbody tr:hover {
+    background: #1a2a3a;
+  }
+
+  .instruction-table tbody tr.drag-over {
+    border-bottom-color: #66b0ff;
+  }
+
+  .drag-handle {
+    color: #555;
+  }
+
+  .drag-handle:hover {
+    color: #aaa;
+  }
+
+  .preview {
+    color: #888;
+  }
+
+  .toggle-slider {
+    background-color: #555;
+  }
+
+  .modal-overlay {
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  .modal-content {
+    background: #2d2d2d;
+  }
+
+  .modal-content h3 {
+    color: #e0e0e0;
+  }
+
+  .form-group label {
+    color: #aaa;
+  }
+
+  .form-group input[type="text"],
+  .form-group textarea {
+    background: #3a3a3a;
+    border-color: #555;
+    color: #e0e0e0;
+  }
+
+  .form-group input[type="text"]:focus,
+  .form-group textarea:focus {
+    border-color: #1677ff;
+    box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.15);
+  }
+
+  .form-group-inline label {
+    color: #aaa;
+  }
+
+  .empty-state {
+    color: #666;
+  }
+
+  .table-container::-webkit-scrollbar-thumb,
+  .sidebar::-webkit-scrollbar-thumb {
+    background: #555;
+  }
+
+  .table-container::-webkit-scrollbar-track,
+  .sidebar::-webkit-scrollbar-track {
+    background: #2d2d2d;
+  }
+}

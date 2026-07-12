@@ -2,7 +2,7 @@
 id: ticket-02
 title: 实现后台 Service Worker
 type: task
-status: open
+status: closed
 labels: [wayfinder:task]
 blockedBy: [ticket-01]
 ---

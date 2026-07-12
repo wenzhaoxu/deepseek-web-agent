@@ -19,7 +19,11 @@
 
 <!-- the index — one line per closed ticket: enough to judge relevance, then zoom the link for the detail the ticket holds -->
 
-*(no decisions yet — map just charted)*
+- [搭建项目骨架与共享基础库](tickets/01-project-foundation.md) — 创建了项目目录结构、构建配置、Manifest V3、共享 types/constants/messages、占位图标。TypeScript 编译验证通过。
+- [实现后台 Service Worker](tickets/02-service-worker.md) — 创建了 Service Worker，实现消息路由、状态缓存与持久化、存储 CRUD、右键菜单、图标徽章、标签页管理。TypeScript 编译验证通过。
+- [实现 Content Script](tickets/03-content-script.md) — 创建了 Content Script，实现 React 受控组件文本注入、input/Enter 事件派发、MutationObserver 状态监控、自动发送逻辑。TypeScript 编译验证通过。
+- [实现 Popup 弹窗界面](tickets/04-popup-ui.md) — 创建了 popup 界面，含状态指示条、分类指令列表、实时搜索、自动发送开关、暗色模式。TypeScript 编译验证通过。
+- [实现 Options 管理页面](tickets/05-options-page.md) — 创建了 Options 管理页，含分类树、指令表格、CRUD 编辑弹窗、拖拽排序、导入导出 JSON、恢复默认指令。TypeScript 编译验证通过。
 
 ## Not yet specified
 

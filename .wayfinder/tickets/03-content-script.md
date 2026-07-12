@@ -2,7 +2,7 @@
 id: ticket-03
 title: 实现 Content Script
 type: task
-status: open
+status: closed
 labels: [wayfinder:task]
 blockedBy: [ticket-01]
 ---

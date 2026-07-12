@@ -2,7 +2,7 @@
 id: ticket-05
 title: 实现 Options 管理页面
 type: task
-status: open
+status: closed
 labels: [wayfinder:task]
 blockedBy: [ticket-01, ticket-02]
 ---
