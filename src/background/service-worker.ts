@@ -504,10 +504,10 @@ async function runGoal(config: GoalConfig): Promise<void> {
         try {
           const tabId = await findOrCreateDeepSeekTab();
 
-          // Fill text (no auto-send)
+          // Fill text and auto-send (triggers Enter)
           await chrome.tabs.sendMessage(tabId, {
             type: MessageType.FILL_TEXT,
-            payload: { text: instruction.text } as FillTextPayload,
+            payload: { text: instruction.text, autoSend: true } as FillTextPayload,
           });
 
           // Step 4: Wait for response (GENERATING -> IDLE)

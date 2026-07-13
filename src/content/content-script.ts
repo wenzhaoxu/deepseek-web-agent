@@ -92,6 +92,20 @@ function checkTargetInPage(targetString: string): { found: boolean; matchedText?
   return { found: false };
 }
 
+// Trigger a send action via Enter key
+function triggerSend(): void {
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+      which: 13,
+      bubbles: true,
+      cancelable: true,
+    })
+  );
+}
+
 // Report status change to the service worker
 function reportStatusChange(): void {
   const currentStatus = detectPageStatus();
@@ -132,6 +146,20 @@ async function handleFillText(payload: FillTextPayload): Promise<ExtensionRespon
 
   setNativeValue(input, payload.text);
   console.log('[DeepSeek助手] 已填入文本:', payload.text.substring(0, 30) + '...');
+
+  if (payload.autoSend) {
+    const status = detectPageStatus();
+    if (status === TabStatus.IDLE) {
+      input.focus();
+      await new Promise<void>(r => setTimeout(r, 100));
+      triggerSend();
+      return createSuccessResponse<FillResultPayload>({ status: 'success' });
+    }
+    return createSuccessResponse<FillResultPayload>({
+      status: 'warning',
+      warning: '模型回复中，已填入未发送',
+    });
+  }
 
   return createSuccessResponse<FillResultPayload>({ status: 'success' });
 }
