@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "lmstudio-fastcontext": {
+      "command": "npx",
+      "args": ["-y", "@houtini/lm"],
+      "env": {
+        "OPENAI_BASE_URL": "http://127.0.0.1:1234/v1",
+        "OPENAI_MODEL": "fastcontext-1.0-4b-sft"
+      }
+    }
+  }
+}
