@@ -8,9 +8,12 @@
     "watch": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+"test:integration": "playwright test",
+"test:all": "vitest run && playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@types/chrome": "^0.2.2",
     "@vitest/coverage-v8": "^4.1.10",
     "jsdom": "^29.1.1",
