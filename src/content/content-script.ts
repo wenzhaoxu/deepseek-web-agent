@@ -111,7 +111,11 @@ function setupMessageListener(): void {
 // Setup disconnect listeners for page unload
 function setupDisconnectListeners(): void {
   const handleDisconnect = (): void => {
-    chrome.runtime.sendMessage(createMessage(MessageType.DISCONNECT));
+    try {
+      chrome.runtime.sendMessage(createMessage(MessageType.DISCONNECT));
+    } catch {
+      // Extension context may already be invalidated (e.g. during reload)
+    }
   };
   window.addEventListener('beforeunload', handleDisconnect);
   window.addEventListener('pagehide', handleDisconnect);
@@ -119,13 +123,11 @@ function setupDisconnectListeners(): void {
 
 // Initialize the content script
 function init(): void {
-  console.log('[DeepSeek助手] Content Script 已加载');
   setupMessageListener();
   setupMutationObserver();
   setupDisconnectListeners();
   chrome.runtime.sendMessage(createMessage(MessageType.CONTENT_SCRIPT_READY));
   reportStatusChange();
-  console.log('[DeepSeek助手] 初始化完成');
 }
 
 init();
