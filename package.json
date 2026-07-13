@@ -5,10 +5,16 @@
   "description": "DeepSeek 助手 Edge Extension",
   "scripts": {
     "build": "node scripts/build.js",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
     "@types/chrome": "^0.2.2",
-    "typescript": "^5.4.0"
+    "@vitest/coverage-v8": "^4.1.10",
+    "jsdom": "^29.1.1",
+    "typescript": "^5.4.0",
+    "vitest": "^4.1.10"
   }
 }

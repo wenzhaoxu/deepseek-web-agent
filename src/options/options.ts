@@ -23,13 +23,20 @@ let editEnabled: HTMLInputElement | null = null;
 let categoryList: HTMLElement | null = null;
 
 // --- Initialization ---
-document.addEventListener("DOMContentLoaded", async () => {
+function initApp(): void {
   cacheDomElements();
-  await loadInstructions();
-  renderCategoryTree();
-  renderInstructionTable();
-  setupEventListeners();
-});
+  loadInstructions().then(() => {
+    renderCategoryTree();
+    renderInstructionTable();
+    setupEventListeners();
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 function cacheDomElements(): void {
   categoryTree = document.getElementById("categoryTree");

@@ -29,17 +29,23 @@ let maxRounds = 5;
 let goalPollTimer: number | undefined;
 
 // --- Initialization ---
-document.addEventListener("DOMContentLoaded", async () => {
+function initApp(): void {
   cacheDomElements();
   if (!statusBar || !searchInput || !instructionList || !openDeepseekBtn || !manageInstructionsBtn) {
     console.error("Popup: Failed to cache DOM elements");
     return;
   }
-  await Promise.all([loadStatus(), loadInstructions()]);
-  setupEventListeners();
-  setupTabSwitching();
-  // Default to commands tab
-});
+  Promise.all([loadStatus(), loadInstructions()]).then(() => {
+    setupEventListeners();
+    setupTabSwitching();
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 function cacheDomElements(): void {
   statusBar = document.getElementById("status-bar");
