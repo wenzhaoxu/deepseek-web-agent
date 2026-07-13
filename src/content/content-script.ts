@@ -1,5 +1,5 @@
 import { TabStatus, MessageType } from '../shared/types.js';
-import type { ExtensionMessage, ExtensionResponse, FillTextPayload, FillResultPayload } from '../shared/types.js';
+import type { ExtensionMessage, ExtensionResponse, FillTextPayload, FillResultPayload, GoalCheckTargetPayload, GoalCheckTargetResult } from '../shared/types.js';
 import { INPUT_SELECTORS, SELECTORS, STATUS_CONFIG } from '../shared/constants.js';
 import { createMessage, createErrorResponse, createSuccessResponse } from '../shared/messages.js';
 
@@ -48,6 +48,48 @@ function detectPageStatus(): TabStatus {
     return TabStatus.GENERATING;
   }
   return TabStatus.IDLE;
+}
+
+// Get the latest assistant response text from the page
+function getLatestResponseText(): string {
+  // Strategy 1: Try to find the last assistant message container
+  // DeepSeek typically structures responses in specific containers
+  const possibleSelectors = [
+    '.ds-markdown',
+    '[data-testid="assistant-message"]',
+    '.message-content',
+    '.assistant-message',
+  ];
+
+  // Try each selector to find all response elements
+  for (const selector of possibleSelectors) {
+    const elements = document.querySelectorAll(selector);
+    if (elements.length > 0) {
+      // Return the LAST (most recent) response text
+      return elements[elements.length - 1].textContent || '';
+    }
+  }
+
+  // Strategy 2: Fallback to body text
+  return document.body.innerText || '';
+}
+
+// Check if the page contains the target string
+function checkTargetInPage(targetString: string): { found: boolean; matchedText?: string } {
+  const pageText = getLatestResponseText();
+  if (!pageText) return { found: false };
+
+  const index = pageText.indexOf(targetString);
+  if (index !== -1) {
+    const start = Math.max(0, index - 20);
+    const end = Math.min(pageText.length, index + targetString.length + 20);
+    return {
+      found: true,
+      matchedText: pageText.substring(start, end)
+    };
+  }
+
+  return { found: false };
 }
 
 // Report status change to the service worker
@@ -103,6 +145,13 @@ function setupMessageListener(): void {
           .then(r => sendResponse(r))
           .catch(err => sendResponse(createErrorResponse(err.message)));
         return true; // keep channel open for async response
+      }
+
+      if (message.type === MessageType.GOAL_CHECK_TARGET) {
+        const payload = message.payload as GoalCheckTargetPayload;
+        const result = checkTargetInPage(payload.targetString);
+        sendResponse(createSuccessResponse<GoalCheckTargetResult>(result));
+        return true;
       }
     }
   );

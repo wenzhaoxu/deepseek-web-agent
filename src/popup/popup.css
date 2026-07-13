@@ -224,6 +224,202 @@ body {
   font-size: 13px;
 }
 
+/* ---------- Tab Navigation ---------- */
+.tab-nav {
+  display: flex;
+  border-bottom: 1px solid #e8e8e8;
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  color: #888;
+  transition: color 0.2s, border-color 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-btn.active {
+  color: #1677ff;
+  border-bottom-color: #1677ff;
+  font-weight: 600;
+}
+
+.tab-btn:hover {
+  color: #555;
+}
+
+/* ---------- Panel ---------- */
+.panel {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(480px - 41px); /* minus tab height */
+  overflow: hidden;
+}
+
+/* ---------- Goal Panel ---------- */
+.goal-section {
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.goal-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.goal-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.goal-input:focus {
+  border-color: #1677ff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+}
+
+.goal-number-input {
+  width: 80px;
+  padding: 6px 10px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+
+.goal-number-input:focus {
+  border-color: #1677ff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+}
+
+/* Instruction checklist in goal panel */
+.goal-checklist {
+  max-height: 140px;
+  overflow-y: auto;
+  margin: 4px 0;
+}
+
+.goal-checklist-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 13px;
+  gap: 8px;
+}
+
+.goal-checklist-item input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.goal-checklist-item label {
+  cursor: pointer;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Goal progress area */
+.goal-progress {
+  padding: 16px 12px;
+  text-align: center;
+}
+
+.goal-status-text {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.goal-status-text.running {
+  color: #1677ff;
+}
+
+.goal-status-text.stopped {
+  color: #ff4d4f;
+}
+
+.goal-status-text.completed {
+  color: #52c41a;
+}
+
+.goal-progress-detail {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 12px;
+}
+
+.goal-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: #f0f0f0;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.goal-progress-bar-fill {
+  height: 100%;
+  background: #1677ff;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* Goal buttons */
+.goal-btn {
+  width: 100%;
+  padding: 8px 0;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.goal-btn-start {
+  background: #1677ff;
+  color: #fff;
+}
+
+.goal-btn-start:hover {
+  background: #4096ff;
+}
+
+.goal-btn-start:disabled {
+  background: #a0c4ff;
+  cursor: not-allowed;
+}
+
+.goal-btn-stop {
+  background: #ff4d4f;
+  color: #fff;
+}
+
+.goal-btn-stop:hover {
+  background: #ff7875;
+}
+
 /* ============================================================
    Dark Mode
    ============================================================ */
@@ -306,5 +502,33 @@ body {
 
   .empty-state {
     color: #666;
+  }
+
+  .tab-nav {
+    background: #1e1e1e;
+    border-bottom-color: #333;
+  }
+  .tab-btn {
+    color: #888;
+  }
+  .tab-btn.active {
+    color: #1677ff;
+  }
+  .tab-btn:hover {
+    color: #ccc;
+  }
+  .goal-section {
+    border-bottom-color: #333;
+  }
+  .goal-input, .goal-number-input {
+    background: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+  .goal-progress-bar {
+    background: #333;
+  }
+  .goal-checklist-item {
+    color: #ccc;
   }
 }

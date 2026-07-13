@@ -5,6 +5,10 @@ import type {
   ExtensionResponse,
   FillTextPayload,
   FillResultPayload,
+  GoalConfig,
+  GoalState,
+  GoalCheckTargetPayload,
+  GoalCheckTargetResult,
 } from '../shared/types.js';
 import { STORAGE_KEYS, DEFAULT_INSTRUCTIONS, STATUS_CONFIG } from '../shared/constants.js';
 import { createSuccessResponse, createErrorResponse } from '../shared/messages.js';
@@ -27,6 +31,39 @@ const pendingReadyMap = new Map<
 
 /** Tabs that already sent CONTENT_SCRIPT_READY (resolve waitForTabReady immediately). */
 const readyTabs = new Set<number>();
+
+// ============================================================================
+// Goal Engine
+// ============================================================================
+
+let goalState: GoalStateInternal = {
+  running: false,
+  config: null,
+  currentRound: 0,
+  currentInstructionIndex: 0,
+  statusText: '',
+  stopRequested: false,
+  abortController: null,
+};
+
+/** Internal goal state with engine-only properties. */
+interface GoalStateInternal {
+  running: boolean;
+  config: GoalConfig | null;
+  currentRound: number;
+  currentInstructionIndex: number;
+  statusText: string;
+  stopRequested: boolean;
+  abortController: AbortController | null;
+}
+
+// Goal wait-for-IDLE promise
+let idleResolver: (() => void) | null = null;
+
+function onIdleDetected(): void {
+  idleResolver?.();
+  idleResolver = null;
+}
 
 // ============================================================================
 // Storage CRUD
@@ -279,6 +316,10 @@ async function handleMessage(
           tabStatusMap.set(tabId, payload.status);
           persistTabStatuses();
           updateBadge(tabId, payload.status);
+          // Notify goal engine
+          if (payload.status === TabStatus.IDLE) {
+            onIdleDetected();
+          }
         }
         return createSuccessResponse({ updated: true });
       }
@@ -349,6 +390,42 @@ async function handleMessage(
         return createSuccessResponse({ tabId });
       }
 
+      case MessageType.GOAL_START: {
+        const payload = message.payload as { config: GoalConfig };
+        if (goalState.running) {
+          return createErrorResponse('已有目标正在运行');
+        }
+        // Start goal loop asynchronously (don't await - it runs in background)
+        runGoal(payload.config).catch(err => {
+          console.error('Goal execution error:', err);
+        });
+        return createSuccessResponse({ started: true });
+      }
+
+      case MessageType.GOAL_STOP: {
+        goalState.stopRequested = true;
+        goalState.abortController?.abort();
+        goalState.running = false;
+        goalState.statusText = '已停止';
+        return createSuccessResponse({ stopped: true });
+      }
+
+      case MessageType.GOAL_STATUS: {
+        return createSuccessResponse({
+          running: goalState.running,
+          currentRound: goalState.currentRound,
+          totalRounds: goalState.config?.maxRounds || 0,
+          currentInstructionIndex: goalState.currentInstructionIndex,
+          totalInstructions: goalState.config?.instructionIds.length || 0,
+          statusText: goalState.statusText,
+        } as GoalState);
+      }
+
+      case MessageType.GOAL_CHECK_TARGET_RESULT: {
+        // Forward result from content script if needed
+        return createSuccessResponse({ received: true });
+      }
+
       default:
         return createErrorResponse('未知消息类型');
     }
@@ -376,6 +453,137 @@ export async function getActiveTabStatus(): Promise<{ status: TabStatus; tabId?:
     return { status, tabId: tabs[0].id };
   }
   return { status: TabStatus.IDLE };
+}
+
+// ============================================================================
+// Goal Engine Helpers
+// ============================================================================
+
+async function runGoal(config: GoalConfig): Promise<void> {
+  // Reset state
+  goalState = {
+    running: true,
+    config,
+    currentRound: 0,
+    currentInstructionIndex: 0,
+    statusText: '启动中...',
+    stopRequested: false,
+    abortController: new AbortController(),
+  };
+
+  try {
+    // Load all instructions to get text content
+    const allInstructions = await getInstructions();
+
+    for (let round = 1; round <= config.maxRounds; round++) {
+      if (goalState.stopRequested) break;
+      goalState.currentRound = round;
+      goalState.statusText = `第 ${round}/${config.maxRounds} 轮`;
+
+      for (let idx = 0; idx < config.instructionIds.length; idx++) {
+        if (goalState.stopRequested) break;
+        goalState.currentInstructionIndex = idx;
+
+        const instId = config.instructionIds[idx];
+        const instruction = allInstructions.find(i => i.id === instId);
+        if (!instruction) continue;
+
+        // Step 1: Wait for IDLE
+        goalState.statusText = '等待回复完成...';
+        await waitForIdle();
+
+        // Step 2: Random delay 2-4s
+        const delay = Math.random() * 2000 + 2000;
+        goalState.statusText = `定时等待中 (${Math.round(delay / 1000)}s)...`;
+        await sleep(delay);
+
+        if (goalState.stopRequested) break;
+
+        // Step 3: Send instruction text
+        goalState.statusText = '发送指令...';
+        try {
+          const tabId = await findOrCreateDeepSeekTab();
+
+          // Fill text (no auto-send)
+          await chrome.tabs.sendMessage(tabId, {
+            type: MessageType.FILL_TEXT,
+            payload: { text: instruction.text } as FillTextPayload,
+          });
+
+          // Step 4: Wait for response (GENERATING -> IDLE)
+          goalState.statusText = '等待回复中...';
+          await waitForResponse();
+
+          // Step 5: Check target string
+          if (config.targetString) {
+            goalState.statusText = '检查目标字符串...';
+            const checkResult = await chrome.tabs.sendMessage<
+              ExtensionMessage,
+              ExtensionResponse<GoalCheckTargetResult>
+            >(tabId, {
+              type: MessageType.GOAL_CHECK_TARGET,
+              payload: { targetString: config.targetString } as GoalCheckTargetPayload,
+            });
+
+            if (checkResult?.data?.found) {
+              goalState.statusText = `已完成: 命中目标「${config.targetString}」`;
+              goalState.running = false;
+              return;
+            }
+          }
+        } catch (err) {
+          console.error('Goal: instruction execution failed', err);
+          goalState.statusText = `执行失败: ${err instanceof Error ? err.message : '未知错误'}`;
+          // Continue to next instruction despite error
+        }
+      }
+    }
+
+    if (!goalState.stopRequested) {
+      goalState.statusText = `已完成: 达到最大轮数 (${config.maxRounds})`;
+    }
+  } catch (err) {
+    console.error('Goal: engine error', err);
+    goalState.statusText = '引擎异常';
+  } finally {
+    goalState.running = false;
+  }
+}
+
+async function waitForIdle(): Promise<void> {
+  // Check current tab status first
+  const status = await getActiveTabStatus();
+  if (status.status === TabStatus.IDLE) return;
+
+  // Wait for STATUS_CHANGE -> IDLE
+  return new Promise<void>(resolve => {
+    idleResolver = resolve;
+    // Safety timeout: if no IDLE within 60s, continue anyway
+    setTimeout(() => {
+      if (idleResolver) {
+        idleResolver();
+        idleResolver = null;
+      }
+    }, 60000);
+  });
+}
+
+async function waitForResponse(): Promise<void> {
+  // Wait for GENERATING -> IDLE transition
+  return new Promise<void>(resolve => {
+    idleResolver = resolve;
+    // Safety timeout
+    setTimeout(() => {
+      if (idleResolver) {
+        idleResolver();
+        idleResolver = null;
+      }
+    }, 120000); // 2 min max wait for a response
+  });
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // ============================================================================

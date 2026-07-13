@@ -9,6 +9,14 @@
 <body>
   <div class="popup-container">
 
+    <!-- ===== Tab Navigation ===== -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="commands">指令</button>
+      <button class="tab-btn" data-tab="goal">目标</button>
+    </div>
+
+    <div id="commands-panel" class="panel">
+
     <!-- ===== Status Bar ===== -->
     <div id="status-bar" class="status-bar status-bar--idle">
       <span id="status-icon">🟢</span>
@@ -94,6 +102,12 @@
     <div id="toolbar" class="toolbar">
       <button id="open-deepseek">打开 DeepSeek</button>
       <button id="manage-instructions">管理指令</button>
+    </div>
+    </div>
+
+    <!-- ===== Goal Panel ===== -->
+    <div id="goal-panel" class="panel" style="display:none;">
+      <!-- Goal content will be rendered by JS -->
     </div>
 
   </div>

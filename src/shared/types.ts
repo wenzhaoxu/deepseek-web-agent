@@ -38,6 +38,13 @@ export enum MessageType {
   STATUS_CHANGE = 'STATUS_CHANGE',
   DISCONNECT = 'DISCONNECT',
   CONTENT_SCRIPT_READY = 'CONTENT_SCRIPT_READY',
+
+  // Goal
+  GOAL_START = 'GOAL_START',
+  GOAL_STOP = 'GOAL_STOP',
+  GOAL_STATUS = 'GOAL_STATUS',
+  GOAL_CHECK_TARGET = 'GOAL_CHECK_TARGET',
+  GOAL_CHECK_TARGET_RESULT = 'GOAL_CHECK_TARGET_RESULT',
 }
 
 // Base message interface
@@ -92,4 +99,32 @@ export interface GetStatusResponse {
 
 export interface GetInstructionsResponse {
   instructions: Instruction[];
+}
+
+export interface GoalConfig {
+  instructionIds: string[];
+  targetString: string;
+  maxRounds: number;
+}
+
+export interface GoalState {
+  running: boolean;
+  currentRound: number;
+  totalRounds: number;
+  currentInstructionIndex: number;
+  totalInstructions: number;
+  statusText: string; // '等待回复中' | '定时等待中' | '检查中' | '已停止' | '已完成'
+}
+
+export interface GoalStartPayload {
+  config: GoalConfig;
+}
+
+export interface GoalCheckTargetPayload {
+  targetString: string;
+}
+
+export interface GoalCheckTargetResult {
+  found: boolean;
+  matchedText?: string;
 }
