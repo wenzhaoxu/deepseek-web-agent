@@ -486,6 +486,9 @@ function setupEventListeners(): void {
     }
   });
 
+  // Add instruction
+  document.getElementById("addInstructionBtn")?.addEventListener("click", () => openEditModal());
+
   // Toolbar buttons
   document.getElementById("importBtn")?.addEventListener("click", importJSON);
   document.getElementById("exportBtn")?.addEventListener("click", exportJSON);
